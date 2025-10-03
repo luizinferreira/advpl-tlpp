@@ -5,7 +5,7 @@ Siga as instruções abaixo para configurar corretamente o ambiente.
 
 ---
 
-## 📝 1. Crie no meu a Função de Usuário TCCOM01 no módulo que desejar e Relacione-a na tabela SA1 (Cadastro de Clientes).
+## 📝 1. Crie no menu a Função de Usuário TCCOM01 no módulo que desejar e Relacione-a na tabela SA1 (Cadastro de Clientes).
 
 ---
 
