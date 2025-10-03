@@ -1,0 +1,50 @@
+#Include "tlpp-core.th"
+#Include "tlpp-rest.th"
+
+Namespace cepApi
+
+/*/{Protheus.doc} GET Cep
+Exemplo de endpoint GET que recebe um CEP e consulta a API ViaCEP.
+URL esperada: http://localhost:8500/cepapi/cep?cep=88310516
+@type  GET
+@path  /cepapi/cep
+@query cep
+/*/
+
+@Get("cepapi/cep")
+User Function GetCep()
+	Local jResponse     := JsonObject():New() As Json
+	Local cCep          := ''
+	Local oResult       := ''
+	Local aHeader       := {}
+	Local oRestClient   := FWRest():New("https://viacep.com.br/ws")
+
+	Local jQuery := oRest:getQueryRequest()
+
+	If jQuery != Nil .And. !Empty(jQuery:GetJsonObject("search"))
+		cCep := AllTrim(jQuery:GetJsonObject("search"))
+		Conout("Url validada com sucesso")
+	EndIf
+
+	aAdd(aHeader, 'User-Agent: Mozilla/4.0 (compatible; Protheus '+GetBuild()+')')
+	aAdd(aHeader, 'Content-Type: application/json; charset=utf-8')
+
+	oRestClient:setPath("/" + cCep + "/json/")
+	Conout("Iniciando Requisicao para ViaCEP")
+	If oRestClient:Get(aHeader)
+		oResult := oRestClient:cResult
+
+		// Retorna o JSON obtido da API ViaCEP
+		oRest:setStatusCode(200)
+		oRest:setKeyHeaderResponse("Content-Type", "application/json")
+		oRest:setResponse(oResult)
+		Conout("Requisicao finalizada com sucesso")
+	Else
+		oRest:setStatusCode(500)
+		jResponse["erro"] := "O CEP informado no cadastro de cliente não consta na base de dados da consulta Publica"
+		jResponse["detalhe"] := oRestClient:GetLastError()
+		oRest:setResponse(jResponse:toJSON())
+	EndIf
+
+Return oResult
+
