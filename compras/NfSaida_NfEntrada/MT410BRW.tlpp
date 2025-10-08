@@ -1,0 +1,16 @@
+#include "totvs.ch"
+/*/{Protheus.doc} 
+
+Parametros Enviados para o ponto ponto de entrada GRVPRENF().
+
+@type user function
+@author Luiz Eduardo
+@since 25/02/2025
+@Description = Cria o botão Gera Pre Nota em Outras Ações na rotina de pedido de vendas.
+/*/
+
+
+
+User Function MT410BRW()
+	AAdd( aRotina, { 'Gera Pre Nota'  , 'U_GRVPRENF(SC5->C5_FILIAL, SC5->C5_NUM, SC5->C5_XFILDES, SC5->C5_XFORN, SC5->C5_XLOJA, SC5->C5_NOTA, SC5->C5_SERIE, SC5->C5_CONDPAG)', 0, 4, 0, .F. } )
+Return

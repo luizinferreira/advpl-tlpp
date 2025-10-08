@@ -1,0 +1,20 @@
+#Include "PROTHEUS.CH"
+
+/*/
+@type user function
+@author Luiz Eduardo
+@Description = Apresenta uma confirmação na tela se o usuário deseja mesmo finalizar uma Ordem
+de Serviço.
+/*/
+
+User Function NGFINALI()
+    Local cMensagem := "Tem certeza que deseja finalizar essa Ordem de Serviço?"
+    Local lRet := .T.
+     
+    If FwAlertNoYes(cMensagem, "Finaliza Ordem de Serviço")
+        lRet := .T.
+    Else
+        lRet := .F.
+    EndIf
+     
+Return lRet
