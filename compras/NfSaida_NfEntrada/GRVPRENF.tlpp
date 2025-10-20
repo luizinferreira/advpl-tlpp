@@ -46,7 +46,7 @@ User Function GRVPRENF(cFilOri, cPedVenda,cFilDest,cForn,cLoja,cNota,cSerie,cCon
 	SC6->(dbSeek(cFilOri+cPedVenda+"01"))
 	do while SC6->(!Eof()) .and. SC6->(C6_FILIAL+C6_NUM) == cFilOri+cPedVenda
 
-		aAdd(aItensEnv,{SC6->C6_ITEM, SC6->C6_PRODUTO, SC6->C6_UM, SC6->C6_QTDVEN, SC6->C6_PRCVEN, SC6->C6_VALOR, SC6->C6_LOCAL})
+		aAdd(aItensEnv,{SC6->C6_ITEM, SC6->C6_PRODUTO, SC6->C6_UM, SC6->C6_QTDVEN, SC6->C6_PRCVEN, SC6->C6_VALOR, SC6->C6_LOCAL,SC6->C6_LOTECTL})
 
 		SC6->(DbSkip())
 
@@ -75,33 +75,34 @@ static function GeraPreNf(aCabec,aItensEnv,cPedVenda)
 	nModulo := 2
 	cFilAnt := aCabec[1][1]
 
-	aCab := {{"F1_FILIAL"	, aCabec[1][1]	,Nil},;
-		{"F1_TIPO"		, "N"},;
-		{"F1_FORMUL" 	,	"N"},;
-		{"F1_DOC"			, aCabec[1][2]	,Nil},;
-		{"F1_SERIE"		, aCabec[1][3]	,Nil},;
-		{"F1_EMISSAO"	,	dDataBase					},;
-		{"F1_FORNECE"	, aCabec[1][4]	,Nil},;
-		{"F1_LOJA"		, aCabec[1][5]	,Nil},;
-		{"F1_ESPECIE"	, "SPED"						},;
-		{"F1_COND"		, aCabec[1][6]					},;
-		{"F1_MOEDA"		, 1									},;
-		{"F1_TXMOEDA"	, 1									};
+	aCab := {{"F1_FILIAL"		, aCabec[1][1]		, Nil},;
+		{"F1_TIPO"				,	"N"				, Nil},;
+		{"F1_FORMUL" 			,	"N"				, Nil},;
+		{"F1_DOC"				, aCabec[1][2]		, Nil},;
+		{"F1_SERIE"				, aCabec[1][3]		, Nil},;
+		{"F1_EMISSAO"			,	dDataBase		, Nil},;
+		{"F1_FORNECE"			, aCabec[1][4]		, Nil},;
+		{"F1_LOJA"				, aCabec[1][5]		, Nil},;
+		{"F1_ESPECIE"			, "SPED"			, Nil},;
+		{"F1_COND"				, aCabec[1][6]		, Nil},;
+		{"F1_MOEDA"				, 1					, Nil},;
+		{"F1_TXMOEDA"			, 1					, Nil};
 		}
 
 
 	For i := 1 To Len(aItensEnv)
 		aAdd(aLinha,{{"D1_COD"    	,aItensEnv[i][2]												, Nil },;
-			{"D1_UM"			,aItensEnv[i][3]				, Nil},;
-			{"D1_QUANT"		,aItensEnv[i][4]				, Nil},;
-			{"D1_VUNIT"		,aItensEnv[i][5]				, Nil},;
-			{"D1_TOTAL"		,aItensEnv[i][6]				, Nil},;
-			{"D1_CODDIS"	,"Ped. Venda: "+cPedVenda+" NF SAIDA: "+aCabec[1][2], Nil},;
-			{"D1_LOCAL"		,aItensEnv[i][7]				, Nil},;
-			{"D1_NUMPV"		,cPedVenda							, Nil},;
-			{"D1_ITEMPV"	,aItensEnv[i][1]					, Nil},;
-			{"D1_EMISSAO" ,dDataBase							, Nil},;
-			{"D1_DTDIGIT"	,dDataBase							, Nil}})
+			{"D1_UM"				,aItensEnv[i][3]												, Nil},;
+			{"D1_QUANT"				,aItensEnv[i][4]												, Nil},;
+			{"D1_VUNIT"				,aItensEnv[i][5]												, Nil},;
+			{"D1_TOTAL"				,aItensEnv[i][6]												, Nil},;
+			{"D1_CODDIS"			,"Ped. Venda: "+cPedVenda+" NF SAIDA: "+aCabec[1][2]			, Nil},;
+			{"D1_LOCAL"				,aItensEnv[i][7]												, Nil},;
+			{"D1_LOTECTL"			,aItensEnv[i][8]												, Nil},;
+			{"D1_NUMPV"				,cPedVenda														, Nil},;
+			{"D1_ITEMPV"			,aItensEnv[i][1]												, Nil},;
+			{"D1_EMISSAO" 			,dDataBase														, Nil},;
+			{"D1_DTDIGIT"			,dDataBase														, Nil}})
 
 	next
 
