@@ -22,7 +22,7 @@ Função AdvPL que retorna o último preço de compra cadastrado para um produto
 - Observação importante: a query usa `cFilAnt` (filial anterior) na cláusula `D1_FILIAL = '...'`. Essa variável precisa existir no escopo chamador; caso contrário, a consulta pode falhar ou retornar resultados inesperados.
 
 ## Exemplo de uso
-![Cadastro do Gatilho](https://drive.google.com/file/d/1pssD-0rQceWpzdBz2M7_4tQaCw5g8-Rp/view?usp=sharing)
+![Cadastro do Gatilho](https://github.com/luizinferreira/advpl-tlpp/blob/7de9d78c6888aaec8f2092504165d053a6ea2765/faturamento/cadastro-gatilho.png)
 
 ## Dependências / Requisitos
 - Inclui: `Protheus.ch`, `topconn.ch` (cabecalhos do Protheus).
