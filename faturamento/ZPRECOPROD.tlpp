@@ -1,0 +1,49 @@
+#Include 'Protheus.ch'
+#Include 'topconn.ch'
+
+/*/{Protheus.doc} zPrecoProd(cProd)
+	Funcao para retornar o ultimo preco de compra do produto informado.
+	(Utilizar junto com gatilho no campo C6_PRODUTO da tabela de pedido de venda)
+@type user function
+@author Luiz Eduardo
+@since 28/10/2025
+@param cProd
+@return nPreco
+@see https://terminaldeinformacao.com/2021/07/08/como-criar-gatilhos-no-protheus/
+/*/
+User Function ZPRECOPROD(cProd)
+	Local aArea       := FWGetArea()
+	Local cProduto  	:= Alltrim(cProd)
+	Local cError		 	:= ""
+	Local bError			:= ErrorBlock({ |oError| cError := oError:Description })
+	Local cQuery      := ""
+	Local aDados      := {}
+	Local nPreco    	:= 0.0
+
+	Begin Sequence
+		cQuery := " SELECT D1_VUNIT "  					+ CRLF
+		cQuery += " FROM "						 					+ 	RetSQLName("SD1") + CRLF
+		cQuery += " WHERE D1_COD = '" 					+ cProduto 	+ "'" 		+ CRLF
+		cQuery += " AND D1_FILIAL = '" 					+ cFilAnt 	+ "' " 		+ CRLF
+		cQuery += " AND D_E_L_E_T_ = ' '" 			+ CRLF
+		cQuery += " ORDER BY D1_DTDIGIT DESC" 	+ CRLF
+		cQuery += " FETCH FIRST 1 ROW ONLY" 		+ CRLF
+		aDados := QryArray(cQuery)
+
+		If Len(aDados) > 0
+			nPreco := aDados[1][1]
+		Else
+			nPreco := 0.0
+		ENDIF
+	End Sequence
+
+	// Recupera o bloco de erro
+	ErrorBlock(bError)
+	//Mostra o Erro ao usuario mas nao impede e seguir o fluxo de pedido de venda
+	If ! Empty(cError)
+		MsgInfo("Erro ao consultar o preco do produto: " + cError)
+	EndIf
+
+	FWRestArea(aArea)
+
+Return nPreco
