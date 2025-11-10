@@ -1,0 +1,201 @@
+#Include 'Protheus.ch'
+#Include 'TOTVS.ch'
+#Include 'Topconn.ch'
+
+
+User Function ZVPEDPA()
+	Local aArea := FWGetArea()
+	// Local cDocF1l := SD1->D1_DOC
+	Local cDocF1l := SF1->F1_DOC
+	Local cNumPed := ""
+	Local cFil := SF1->F1_FILIAL // Ou SD1->D1_FILIAL se quiser manter a mesma da nota
+	Local cSerie := SF1->F1_SERIE
+	Local cFornece := SF1->F1_FORNECE
+	Local cLoja := SF1->F1_LOJA
+	Local cQuery := ""
+	Local aDados := {}
+	Local cTitulo := ""
+	Local aUsers := {}
+	Local aListaPA := {}
+	Local nPedAtual := 0
+	Local nPaAtual := 0
+	Local cTextHtmlPA := ""
+	Local cTextHtmlPed := ""
+
+	//Pixels da TDialog
+	Local nTop      := 100
+	Local nLeft     := 100
+	Local nBottom   := 500
+	Local nRight    := 550
+
+
+	Private oDlg
+	Private oFont := TFont():New('Courier new',, -15, .T.)
+	Private oButton
+	Private oGridPed
+	Private oGridPA
+
+	//Cria as variaveis para o TDialog
+	Begin Sequence
+		DbSelectArea("SD1")
+		cQuery := "SELECT D1_PEDIDO FROM "+RetSQLName("SD1")    + CRLF
+		cQuery += "WHERE D1_FILIAL = '"+cFil+"' "               + CRLF
+		cQuery += "AND D1_DOC = '"+cDocF1l+"' "                 + CRLF
+		cQuery += "AND D1_SERIE = '"+cSerie+"' "                + CRLF
+		cQuery += "AND D1_FORNECE = '"+cFornece+"' "            + CRLF
+		cQuery += "AND D1_LOJA = '"+cLoja+"' "                  + CRLF
+		cQuery += "AND D1_PEDIDO <> ' ' "                       + CRLF
+		cQuery += "AND D_E_L_E_T_ = ' ' "                       + CRLF
+		cQuery += "GROUP BY D1_PEDIDO"                          + CRLF
+		cQuery += "ORDER BY D1_PEDIDO"                          + CRLF
+		// cQuery += "FETCH FIRST 1 ROW ONLY"                      + CRLF
+		aDados := QryArray(cQuery)
+
+		DbCloseArea()
+
+	End Sequence
+
+	cTitulo:="Pedido de Compra - NF de Entrada: " + cDocF1l + " - Série: " + cSerie
+
+	//Cria o TDialog (janela)
+
+	oDlg := TDialog():New(nTop,nLeft,nBottom,nRight,cTitulo,,,,,CLR_BLACK,CLR_WHITE,,,.T.)
+
+	//Cria desc na tela        nRow,nCol, bText,              oWnd, oFont         cClrText, cClrBack, nWidth, nHeight
+	oTSayNumDoc := TSay():New(10,10,{||"Pedidos(s) da Nota Fiscal"},oDlg,,oFont,,,,.T.,CLR_RED,CLR_BLUE,200,10)
+
+// ====== CRIA GRID PEDIDO ======
+
+	oGridPed := TGrid():New(oDlg,25,1,227,50)
+	oGridPed:SetFont(oFont)
+
+	oGridPed:AddColumn(1, "Pedido", 14, 0)
+	oGridPed:AddColumn(2, "Incluido Por?", 14, 0)
+	oGridPed:AddColumn(3, "Alterado Por?", 14, 0)
+	oGridPed:SetColumnSize(0, 150)
+	oGridPed:SetColumnSize(1, 150)
+	oGridPed:SetColumnSize(2, 50)
+
+	if Len(aDados) > 0
+		for nPedAtual := 1 to Len(aDados)
+			cNumPed := aDados[nPedAtual][1]
+			aUsers:= fBuscaUsrPedido(cFil,cNumPed)
+
+			oGridPed:setRowData(nPedAtual,{|oGridPed| {cNumPed, aUsers[1], aUsers[2]  }})
+		Next
+	else
+		cTextHtmlPed := "<p style='font-size: 12px; color: rgb(161, 151, 151);'>Nenhum Pedido Encontrado</p>"
+		oTSayPed:=  TSay():New(40,75,{||cTextHtmlPed},oDlg,,oFont,,,,.T.,CLR_RED,CLR_BLUE,200,20)
+	endif
+
+	// Preenche a grid com os dados
+	// oGridPed:setRowData(nPedAtual,{|oGridPed| {cNumPed, aUsers[1], aUsers[2]  }})
+
+
+	oGridPed:lShowGrid =  .T.
+
+
+// ====== CRIA GRID PA ======
+	oTSayNumPA := TSay():New(115,10,{||"PA(s) da Nota Fiscal"},oDlg,,oFont,,,,.T.,CLR_RED,CLR_BLUE,200,10)
+
+	oGridPA := TGrid():New(oDlg,130,1,227,50)
+	oGridPA:SetFont(oFont)
+
+	oGridPA:AddColumn(1, "PA", 14, 0,.T.)
+	oGridPA:AddColumn(2, "Valor?", 14, CONTROL_ALIGN_RIGHT,.T.)
+	oGridPA:AddColumn(3, "Saldo?", 14, CONTROL_ALIGN_RIGHT,.T.)
+	oGridPA:SetColumnSize(0, 150)
+	oGridPA:SetColumnSize(1, 150)
+	oGridPA:SetColumnSize(2, 50)
+
+
+	aListaPA := ChecaAdiantamento(cFil, cNumPed)
+	if Len(aListaPA) > 0
+
+		For nPaAtual := 1 to Len(aListaPA)
+			oGridPA:setRowData(nPaAtual,{|oGridPA| { aListaPA[nPaAtual][1], "R$ " + cValToChar(aListaPA[nPaAtual][2]), "R$ " + cValToChar(aListaPA[nPaAtual][3])}})
+		next
+	Else
+		cTextHtmlPA := "<p style='font-size: 12px; color: rgb(161, 151, 151);'>Nenhum PA Encontrado</p>"
+
+		oTSayPA:=  TSay():New(145,75,{||cTextHtmlPA},oDlg,,oFont,,,,.T.,CLR_RED,CLR_BLUE,200,20)
+	endif
+
+
+
+	oGridPA:lShowGrid =  .T.
+
+	//Ativa o TDialog e posiciona no centro da tela
+	oDlg:Activate(,,,.T.)
+	FWRestArea(aArea)
+
+Return
+
+
+/*/{Protheus.docfBuscaUsrPedido}cNumPed 
+	(long_description)
+	@type  Static Function
+	@author user
+	@since 06/11/2025
+	@version version
+	@param param_name, param_type, param_descr
+	@return cNomeUsrInc
+	@example
+	(examples)
+	@see (links_or_references)
+/*/
+Static Function fBuscaUsrPedido(cFil,cNumPed)
+	Local aArea := FWGetArea()
+	Local aUsers := {}
+	Local cNomeUsrAlt := ""
+	Local cNomeUsrInc := ""
+	// Local nItem := 0
+
+
+	Begin Sequence
+		DbSelectArea("SC7")
+		SC7->(DbSetOrder(1)) // indice/Ordem: C7_FILIAL + C7_NUM
+
+		If SC7->(DbSeek(cFil + cNumPed + "0001"))
+			cNomeUsrInc := FWLeUserLg("SC7->C7_USERLGI",1)
+			cNomeUsrAlt := FWLeUserLg("SC7->C7_USERLGA",1)
+
+		Else
+			cNomeUsrInc := "Usuario nao encontrado"
+			cNomeUsrAlt := "Usuario nao encontrado"
+		ENDIF
+
+		aUsers:= {cNomeUsrInc, cNomeUsrAlt}
+		DbCloseArea()
+
+	End sequence
+	FWRestArea(aArea)
+Return aUsers
+
+
+/*/{Protheus.doc} nomeStaticFunction
+            (long_description)
+            @type  Static Function
+            @author Nicolas Amorim
+            @see (links_or_references)
+        /*/
+Static Function ChecaAdiantamento(cFil, cNumPed)
+	Local aArea := FWGetArea()
+	Local aListaPA := {}
+	Local cQuery := ""
+
+	Begin Sequence
+		DbSelectArea("FIE")
+		// lFound := FIE->(DbSeek(cChave))
+		cQuery := "SELECT FIE_NUM, FIE_VALOR, FIE_SALDO FROM " +RetSQLName("FIE") + CRLF
+		cQuery += "WHERE FIE_FILIAL = '"  +cFil+    "'"            + CRLF
+		cQuery += "AND FIE_PEDIDO = '"    +cNumPed+ "'"           + CRLF
+		cQuery += "AND D_E_L_E_T_ = ' ' "                   + CRLF
+		aListaPA := QryArray(cQuery)
+
+
+		DbCloseArea()
+	End sequence
+
+	FWRestArea(aArea)
+Return aListaPA
